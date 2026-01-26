@@ -1,0 +1,40 @@
+# Clarinet
+clarinet
+.cache/
+target/
+requirements/
+manifest.json
+costs-reports.json
+
+# Settings / Private info
+# ALWAYS ignore your settings files if they contain mnemonics or private keys
+settings/Mainnet.toml
+settings/Testnet.toml
+settings/Devnet.toml
+.env
+*.env
+
+# Deployments
+# You may want to keep the .yaml plans but ignore the .json execution traces
+# deployments/*.json
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# Testing
+coverage/
+*.lcov
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+history.txt
+logs/
+*.log
