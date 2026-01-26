@@ -6,9 +6,15 @@ import {
   Cl
 } from '@stacks/transactions';
 import { generateWallet, getStxAddress } from '@stacks/wallet-sdk';
-import { network, contractAddress, contractName, secretKey } from './constants';
+import { STACKS_TESTNET } from '@stacks/network';
+import 'dotenv/config';
 
 async function createSplit() {
+  const secretKey = process.env.STX_MNEMONIC || "";
+  const network = STACKS_TESTNET;
+  const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
+  const contractName = 'split-payment';
+
   const wallet = await generateWallet({
     secretKey,
     password: '',

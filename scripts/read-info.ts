@@ -1,7 +1,11 @@
 import { fetchCallReadOnlyFunction, Cl, cvToJSON } from '@stacks/transactions';
-import { network, contractAddress, contractName } from './constants';
+import { STACKS_TESTNET } from '@stacks/network';
 
 async function getSplitInfo(splitId: number) {
+  const network = STACKS_TESTNET;
+  const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
+  const contractName = 'split-payment';
+
   const result = await fetchCallReadOnlyFunction({
     network,
     contractAddress,

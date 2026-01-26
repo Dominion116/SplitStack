@@ -1,8 +1,9 @@
 import { STACKS_TESTNET } from '@stacks/network';
 import { generateWallet, getStxAddress } from '@stacks/wallet-sdk';
-import { secretKey } from './constants';
+import 'dotenv/config';
 
 async function checkBalance() {
+  const secretKey = process.env.STX_MNEMONIC || "";
   const wallet = await generateWallet({
     secretKey,
     password: '',

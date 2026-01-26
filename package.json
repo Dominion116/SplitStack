@@ -1,4 +1,3 @@
-
 {
   "name": "SplitStack-tests",
   "version": "1.0.0",
@@ -8,17 +7,30 @@
   "scripts": {
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
-    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
+    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
+    "run:read": "tsx scripts/read-info.ts",
+    "run:create": "tsx scripts/create-split.ts",
+    "run:send": "tsx scripts/send-payment.ts",
+    "run:balance": "tsx scripts/check-balance.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@hirosystems/clarinet-sdk": "^3.0.0",
+    "@stacks/common": "^7.3.1",
+    "@stacks/network": "^7.3.1",
     "@stacks/transactions": "^7.0.5",
+    "@stacks/wallet-sdk": "^7.2.0",
     "chokidar-cli": "^3.0.0",
-    "typescript": "^5.6.0",
+    "dotenv": "^17.2.3",
     "vite": "^6.1.0",
     "vitest": "^3.0.0",
     "vitest-environment-clarinet": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
