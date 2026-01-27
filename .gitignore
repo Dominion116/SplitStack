@@ -16,7 +16,7 @@ settings/Devnet.toml
 
 # Deployments
 # You may want to keep the .yaml plans but ignore the .json execution traces
-# deployments/*.json
+deployments/*.json
 
 # Node
 node_modules/
@@ -25,6 +25,11 @@ yarn-debug.log*
 yarn-error.log*
 .npm
 .eslintcache
+
+# Frontend
+frontend/dist/
+frontend/dist-ssr/
+frontend/.DS_Store
 
 # Testing
 coverage/
