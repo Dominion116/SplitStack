@@ -1,7 +1,6 @@
-import { showConnect } from '@stacks/connect';
-import { UserSession, AppConfig } from '@stacks/auth';
+import { showConnect, UserSession, AppConfig } from '@stacks/connect';
 import { appDetails } from '../lib/stacks';
-import { LogIn, LogOut, Wallet } from 'lucide-react';
+import { LogOut, Wallet } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
