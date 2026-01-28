@@ -13,6 +13,6 @@ plan:
             expected-sender: ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY
             cost: 130030
             path: contracts/split-payment.clar
-            anchor-block-only: true
-            clarity-version: 1
-      epoch: "2.05"
+            anchor-block-only: false
+            clarity-version: 3
+      epoch: "3.0"

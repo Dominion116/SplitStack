@@ -5,6 +5,8 @@ import {
   stringAsciiCV, 
   listCV, 
   principalCV,
+  tupleCV,
+  boolCV,
   PostConditionMode
 } from '@stacks/transactions';
 import { userSession } from './WalletConnect';
@@ -14,6 +16,7 @@ import { Plus, Trash2, Send } from 'lucide-react';
 export const CreateSplit = () => {
   const [name, setName] = useState('');
   const [recipients, setRecipients] = useState([{ address: '', share: '' }]);
+  const [autoDistribute, setAutoDistribute] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const addRecipient = () => {
@@ -38,8 +41,10 @@ export const CreateSplit = () => {
 
     setIsLoading(true);
     try {
-      const recipientAddresses = recipients.map(r => principalCV(r.address));
-      const recipientShares = recipients.map(r => uintCV(parseInt(r.share)));
+      const recipientsCV = recipients.map(r => tupleCV({
+        recipient: principalCV(r.address),
+        share: uintCV(parseInt(r.share) * 100)
+      }));
 
       await openContractCall({
         network,
@@ -48,8 +53,8 @@ export const CreateSplit = () => {
         functionName: 'create-split',
         functionArgs: [
           stringAsciiCV(name),
-          listCV(recipientAddresses),
-          listCV(recipientShares)
+          listCV(recipientsCV),
+          boolCV(autoDistribute)
         ],
         postConditionMode: PostConditionMode.Allow,
         onFinish: (data) => {
@@ -84,6 +89,19 @@ export const CreateSplit = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+        </div>
+
+        <div className="flex items-center gap-3 glass p-4 rounded-xl border-dashed">
+          <input 
+            type="checkbox" 
+            id="autoDistribute"
+            className="w-5 h-5 accent-primary"
+            checked={autoDistribute}
+            onChange={(e) => setAutoDistribute(e.target.checked)}
+          />
+          <label htmlFor="autoDistribute" className="text-sm font-medium cursor-pointer">
+            Auto-distribute payments immediately
+          </label>
         </div>
 
         <div className="space-y-4">

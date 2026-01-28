@@ -1,7 +1,7 @@
 import { STACKS_TESTNET } from '@stacks/network';
 
 export const network = STACKS_TESTNET;
-export const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY';
+export const contractAddress = 'ST1P5VMVNKV33KQ7HXA43WVFQHTM9JBFBWXC0WNX8';
 export const contractName = 'split-payment';
 export const appDetails = {
   name: 'SplitStack',

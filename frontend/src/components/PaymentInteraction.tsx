@@ -23,14 +23,14 @@ export const PaymentInteraction = () => {
       const senderAddress = userData.profile.stxAddress.testnet;
 
       const postConditions = [
-        Pc.stx(senderAddress).equal(stxAmount)
+        Pc.principal(senderAddress).willSendEq(stxAmount).ustx()
       ];
 
       await openContractCall({
         network,
         contractAddress,
         contractName,
-        functionName: 'pay-to-split',
+        functionName: 'send-to-split',
         functionArgs: [uintCV(splitId), uintCV(stxAmount)],
         postConditions,
         onFinish: () => {
@@ -54,7 +54,7 @@ export const PaymentInteraction = () => {
         network,
         contractAddress,
         contractName,
-        functionName: 'withdraw-accumulated',
+        functionName: 'withdraw',
         functionArgs: [uintCV(splitId)],
         onFinish: () => {
           alert('Withdrawal successful!');
