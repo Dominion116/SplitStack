@@ -5,7 +5,7 @@ import { LogIn, LogOut, Wallet } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
-const userSession = new UserSession({ appConfig });
+export const userSession = new UserSession({ appConfig });
 
 export const WalletConnect = () => {
   const [userData, setUserData] = useState<any>(null);
@@ -33,14 +33,15 @@ export const WalletConnect = () => {
   const disconnectWallet = () => {
     userSession.signUserOut();
     setUserData(null);
+    window.location.reload();
   };
 
   if (userData) {
-    const address = userData.profile.stxAddress.testnet;
+    const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
     return (
       <div className="flex items-center gap-4">
         <div className="hidden md:flex flex-col items-end">
-          <span className="text-xs text-text-muted">Connected Payload</span>
+          <span className="text-xs text-text-muted">Connected Wallet</span>
           <span className="text-sm font-medium">{address.slice(0, 6)}...{address.slice(-4)}</span>
         </div>
         <button onClick={disconnectWallet} className="btn-secondary flex items-center gap-2">
@@ -58,5 +59,3 @@ export const WalletConnect = () => {
     </button>
   );
 };
-
-export { userSession };
