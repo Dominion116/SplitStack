@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { openContractCall } from '@stacks/connect';
+import { useState } from 'react'
+import { openContractCall } from '@stacks/connect'
 import { 
   uintCV, 
   stringAsciiCV, 
@@ -8,43 +8,62 @@ import {
   tupleCV,
   boolCV,
   PostConditionMode
-} from '@stacks/transactions';
-import { userSession } from './WalletConnect';
-import { network, contractAddress, contractName } from '../lib/stacks';
-import { Plus, Trash2, Send } from 'lucide-react';
+} from '@stacks/transactions'
+import { Plus, Trash2, Rocket, Users } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useStacks, network, contractAddress, contractName } from '@/lib/stacks.tsx'
 
-export const CreateSplit = () => {
-  const [name, setName] = useState('');
-  const [recipients, setRecipients] = useState([{ address: '', share: '' }]);
-  const [autoDistribute, setAutoDistribute] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+interface Recipient {
+  address: string
+  share: string
+}
+
+export function CreateSplit() {
+  const { isConnected } = useStacks()
+  const [name, setName] = useState('')
+  const [recipients, setRecipients] = useState<Recipient[]>([{ address: '', share: '' }])
+  const [autoDistribute, setAutoDistribute] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   const addRecipient = () => {
-    setRecipients([...recipients, { address: '', share: '' }]);
-  };
+    if (recipients.length < 10) {
+      setRecipients([...recipients, { address: '', share: '' }])
+    }
+  }
 
   const removeRecipient = (index: number) => {
-    setRecipients(recipients.filter((_, i) => i !== index));
-  };
+    setRecipients(recipients.filter((_, i) => i !== index))
+  }
 
-  const updateRecipient = (index: number, field: string, value: string) => {
-    const newRecipients = [...recipients];
-    newRecipients[index] = { ...newRecipients[index], [field]: value };
-    setRecipients(newRecipients);
-  };
+  const updateRecipient = (index: number, field: keyof Recipient, value: string) => {
+    const updated = [...recipients]
+    updated[index] = { ...updated[index], [field]: value }
+    setRecipients(updated)
+  }
+
+  const totalShares = recipients.reduce((sum, r) => sum + (parseFloat(r.share) || 0), 0)
 
   const handleCreate = async () => {
-    if (!userSession.isUserSignedIn()) {
-      alert('Please connect your wallet first');
-      return;
+    if (!isConnected) {
+      alert('Please connect your wallet first')
+      return
     }
 
-    setIsLoading(true);
+    if (totalShares !== 100) {
+      alert('Total shares must equal 100%')
+      return
+    }
+
+    setIsLoading(true)
     try {
       const recipientsCV = recipients.map(r => tupleCV({
         recipient: principalCV(r.address),
-        share: uintCV(parseInt(r.share) * 100)
-      }));
+        share: uintCV(Math.round(parseFloat(r.share) * 100))
+      }))
 
       await openContractCall({
         network,
@@ -58,103 +77,144 @@ export const CreateSplit = () => {
         ],
         postConditionMode: PostConditionMode.Allow,
         onFinish: (data) => {
-          console.log('Transaction broadcasted:', data);
-          alert('Split created successfully!');
-          setIsLoading(false);
-          setName('');
-          setRecipients([{ address: '', share: '' }]);
+          console.log('Transaction broadcasted:', data)
+          alert('Split created successfully! Transaction ID: ' + data.txId)
+          setIsLoading(false)
+          setName('')
+          setRecipients([{ address: '', share: '' }])
         },
         onCancel: () => {
-          setIsLoading(false);
+          setIsLoading(false)
         }
-      });
+      })
     } catch (error) {
-      console.error(error);
-      alert('Error creating split');
-      setIsLoading(false);
+      console.error(error)
+      alert('Error creating split')
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="glass p-8 max-w-2xl w-full mx-auto animate-fade-in">
-      <h2 className="text-2xl font-bold mb-6 gradient-text">Create New Split</h2>
-      
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-text-muted mb-2">Split Name</label>
-          <input 
-            type="text" 
-            className="input-field" 
-            placeholder="e.g. Project Alpha"
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-primary/10">
+            <Users className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle>Create New Split</CardTitle>
+            <CardDescription>Set up automatic payment distribution</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Split Name */}
+        <div className="space-y-2">
+          <Label htmlFor="splitName">Split Name</Label>
+          <Input 
+            id="splitName"
+            placeholder="e.g. Team Revenue Split"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center gap-3 glass p-4 rounded-xl border-dashed">
-          <input 
-            type="checkbox" 
+        {/* Auto Distribute Toggle */}
+        <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 border border-border">
+          <div className="space-y-0.5">
+            <Label htmlFor="autoDistribute" className="text-foreground cursor-pointer">
+              Auto-distribute payments
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {autoDistribute 
+                ? 'Payments are sent immediately to recipients' 
+                : 'Recipients withdraw their share manually'}
+            </p>
+          </div>
+          <Switch 
             id="autoDistribute"
-            className="w-5 h-5 accent-primary"
             checked={autoDistribute}
-            onChange={(e) => setAutoDistribute(e.target.checked)}
+            onCheckedChange={setAutoDistribute}
           />
-          <label htmlFor="autoDistribute" className="text-sm font-medium cursor-pointer">
-            Auto-distribute payments immediately
-          </label>
         </div>
 
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-text-muted">Recipients & Shares (%)</label>
-          {recipients.map((recipient, index) => (
-            <div key={index} className="flex gap-3 items-center">
-              <input 
-                type="text" 
-                className="input-field flex-[3]" 
-                placeholder="Stacks Address (ST...)"
-                value={recipient.address}
-                onChange={(e) => updateRecipient(index, 'address', e.target.value)}
-              />
-              <input 
-                type="number" 
-                className="input-field flex-1" 
-                placeholder="%"
-                value={recipient.share}
-                onChange={(e) => updateRecipient(index, 'share', e.target.value)}
-              />
-              {recipients.length > 1 && (
-                <button 
-                  onClick={() => removeRecipient(index)}
-                  className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors"
-                >
-                  <Trash2 size={20} />
-                </button>
-              )}
-            </div>
-          ))}
+        {/* Recipients */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Recipients & Shares</Label>
+            <span className={`text-sm font-medium ${totalShares === 100 ? 'text-green-500' : 'text-destructive'}`}>
+              Total: {totalShares}%
+            </span>
+          </div>
           
-          <button 
-            onClick={addRecipient}
-            className="flex items-center gap-2 text-primary hover:text-primary-hover font-medium transition-colors"
-          >
-            <Plus size={18} />
-            <span>Add Recipient</span>
-          </button>
+          <div className="space-y-3">
+            {recipients.map((recipient, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <Input 
+                  className="flex-[3]"
+                  placeholder="ST... address"
+                  value={recipient.address}
+                  onChange={(e) => updateRecipient(index, 'address', e.target.value)}
+                />
+                <div className="relative flex-1">
+                  <Input 
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    max="100"
+                    value={recipient.share}
+                    onChange={(e) => updateRecipient(index, 'share', e.target.value)}
+                    className="pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
+                </div>
+                {recipients.length > 1 && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => removeRecipient(index)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {recipients.length < 10 && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={addRecipient}
+              className="text-primary hover:text-primary"
+            >
+              <Plus className="h-4 w-4" />
+              Add Recipient
+            </Button>
+          )}
         </div>
 
-        <button 
+        {/* Submit Button */}
+        <Button 
+          size="lg"
+          className="w-full"
           onClick={handleCreate}
-          disabled={isLoading}
-          className="btn-primary w-full justify-center py-4 text-lg"
+          disabled={isLoading || !name || recipients.some(r => !r.address || !r.share) || totalShares !== 100}
         >
-          {isLoading ? 'Processing...' : (
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              Creating...
+            </span>
+          ) : (
             <>
-              <Send size={20} />
-              <span>Broadcast Split</span>
+              <Rocket className="h-4 w-4" />
+              Create Split
             </>
           )}
-        </button>
-      </div>
-    </div>
-  );
-};
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}

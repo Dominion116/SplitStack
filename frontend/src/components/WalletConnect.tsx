@@ -1,60 +1,47 @@
-import { showConnect, UserSession, AppConfig } from '@stacks/connect';
-import { appDetails } from '../lib/stacks';
-import { LogOut, Wallet } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { showConnect } from '@stacks/connect'
+import { LogOut, Wallet } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useStacks, appDetails, userSession } from '@/lib/stacks.tsx'
 
-const appConfig = new AppConfig(['store_write', 'publish_data']);
-export const userSession = new UserSession({ appConfig });
-
-export const WalletConnect = () => {
-  const [userData, setUserData] = useState<any>(null);
-
-  useEffect(() => {
-    if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((data) => {
-        setUserData(data);
-      });
-    } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData());
-    }
-  }, []);
+export function WalletConnect() {
+  const { isConnected, stxAddress } = useStacks()
 
   const connectWallet = () => {
     showConnect({
       appDetails,
       onFinish: () => {
-        window.location.reload();
+        window.location.reload()
       },
       userSession,
-    });
-  };
+    })
+  }
 
   const disconnectWallet = () => {
-    userSession.signUserOut();
-    setUserData(null);
-    window.location.reload();
-  };
+    userSession.signUserOut()
+    window.location.reload()
+  }
 
-  if (userData) {
-    const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
+  if (isConnected && stxAddress) {
     return (
-      <div className="flex items-center gap-4">
-        <div className="hidden md:flex flex-col items-end">
-          <span className="text-xs text-text-muted">Connected Wallet</span>
-          <span className="text-sm font-medium">{address.slice(0, 6)}...{address.slice(-4)}</span>
+      <div className="flex items-center gap-3">
+        <div className="hidden sm:flex flex-col items-end">
+          <span className="text-xs text-muted-foreground">Connected</span>
+          <span className="text-sm font-mono font-medium">
+            {stxAddress.slice(0, 6)}...{stxAddress.slice(-4)}
+          </span>
         </div>
-        <button onClick={disconnectWallet} className="btn-secondary flex items-center gap-2">
-          <LogOut size={18} />
-          <span>Disconnect</span>
-        </button>
+        <Button variant="outline" size="sm" onClick={disconnectWallet}>
+          <LogOut className="h-4 w-4" />
+          <span className="hidden sm:inline">Disconnect</span>
+        </Button>
       </div>
-    );
+    )
   }
 
   return (
-    <button onClick={connectWallet} className="btn-primary">
-      <Wallet size={18} />
+    <Button onClick={connectWallet}>
+      <Wallet className="h-4 w-4" />
       <span>Connect Wallet</span>
-    </button>
-  );
-};
+    </Button>
+  )
+}
