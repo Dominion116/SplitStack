@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { openContractCall } from '@stacks/connect'
+import { request } from '@stacks/connect'
 import { 
   uintCV, 
   stringAsciiCV, 
@@ -7,7 +7,7 @@ import {
   principalCV,
   tupleCV,
   boolCV,
-  PostConditionMode
+  cvToHex
 } from '@stacks/transactions'
 import { Plus, Trash2, Rocket, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useStacks, network, contractAddress, contractName } from '@/lib/stacks.tsx'
+import { useStacks, contractAddress, contractName } from '@/lib/stacks.tsx'
 
 interface Recipient {
   address: string
@@ -23,7 +23,7 @@ interface Recipient {
 }
 
 export function CreateSplit() {
-  const { isConnected } = useStacks()
+  const { isWalletConnected } = useStacks()
   const [name, setName] = useState('')
   const [recipients, setRecipients] = useState<Recipient[]>([{ address: '', share: '' }])
   const [autoDistribute, setAutoDistribute] = useState(true)
@@ -48,7 +48,7 @@ export function CreateSplit() {
   const totalShares = recipients.reduce((sum, r) => sum + (parseFloat(r.share) || 0), 0)
 
   const handleCreate = async () => {
-    if (!isConnected) {
+    if (!isWalletConnected) {
       alert('Please connect your wallet first')
       return
     }
@@ -65,31 +65,26 @@ export function CreateSplit() {
         share: uintCV(Math.round(parseFloat(r.share) * 100))
       }))
 
-      await openContractCall({
-        network,
-        contractAddress,
-        contractName,
+      const functionArgs = [
+        stringAsciiCV(name),
+        listCV(recipientsCV),
+        boolCV(autoDistribute)
+      ]
+
+      const response = await request('stx_callContract', {
+        contract: `${contractAddress}.${contractName}`,
         functionName: 'create-split',
-        functionArgs: [
-          stringAsciiCV(name),
-          listCV(recipientsCV),
-          boolCV(autoDistribute)
-        ],
-        postConditionMode: PostConditionMode.Allow,
-        onFinish: (data) => {
-          console.log('Transaction broadcasted:', data)
-          alert('Split created successfully! Transaction ID: ' + data.txId)
-          setIsLoading(false)
-          setName('')
-          setRecipients([{ address: '', share: '' }])
-        },
-        onCancel: () => {
-          setIsLoading(false)
-        }
+        functionArgs: functionArgs.map(arg => cvToHex(arg)),
       })
+
+      console.log('Transaction broadcasted:', response)
+      alert('Split created successfully! Transaction ID: ' + response.txid)
+      setName('')
+      setRecipients([{ address: '', share: '' }])
     } catch (error) {
       console.error(error)
       alert('Error creating split')
+    } finally {
       setIsLoading(false)
     }
   }

@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { openContractCall } from '@stacks/connect'
-import { uintCV, Pc } from '@stacks/transactions'
+import { request } from '@stacks/connect'
+import { uintCV, cvToHex } from '@stacks/transactions'
 import { Send, ArrowDownToLine, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useStacks, network, contractAddress, contractName } from '@/lib/stacks.tsx'
+import { useStacks, contractAddress, contractName } from '@/lib/stacks.tsx'
 
 export function PaymentInteraction() {
-  const { isConnected, stxAddress } = useStacks()
+  const { isWalletConnected, stxAddress } = useStacks()
   const [splitId, setSplitId] = useState('')
   const [amount, setAmount] = useState('')
   const [withdrawSplitId, setWithdrawSplitId] = useState('')
@@ -17,7 +17,7 @@ export function PaymentInteraction() {
   const [isWithdrawLoading, setIsWithdrawLoading] = useState(false)
 
   const handlePay = async () => {
-    if (!isConnected || !stxAddress) {
+    if (!isWalletConnected || !stxAddress) {
       alert('Please connect your wallet first')
       return
     }
@@ -27,33 +27,29 @@ export function PaymentInteraction() {
     try {
       const stxAmount = BigInt(Math.round(parseFloat(amount) * 1000000))
 
-      const postConditions = [
-        Pc.principal(stxAddress).willSendEq(stxAmount).ustx()
+      const functionArgs = [
+        uintCV(parseInt(splitId)),
+        uintCV(stxAmount)
       ]
 
-      await openContractCall({
-        network,
-        contractAddress,
-        contractName,
+      const response = await request('stx_callContract', {
+        contract: `${contractAddress}.${contractName}`,
         functionName: 'send-to-split',
-        functionArgs: [uintCV(parseInt(splitId)), uintCV(stxAmount)],
-        postConditions,
-        onFinish: (data) => {
-          alert('Payment sent! Transaction ID: ' + data.txId)
-          setIsPayLoading(false)
-          setAmount('')
-        },
-        onCancel: () => setIsPayLoading(false)
+        functionArgs: functionArgs.map(arg => cvToHex(arg)),
       })
+
+      alert('Payment sent! Transaction ID: ' + response.txid)
+      setAmount('')
     } catch (error) {
       console.error(error)
       alert('Error sending payment')
+    } finally {
       setIsPayLoading(false)
     }
   }
 
   const handleWithdraw = async () => {
-    if (!isConnected) {
+    if (!isWalletConnected) {
       alert('Please connect your wallet first')
       return
     }
@@ -61,21 +57,19 @@ export function PaymentInteraction() {
     setIsWithdrawLoading(true)
     
     try {
-      await openContractCall({
-        network,
-        contractAddress,
-        contractName,
+      const functionArgs = [uintCV(parseInt(withdrawSplitId))]
+
+      const response = await request('stx_callContract', {
+        contract: `${contractAddress}.${contractName}`,
         functionName: 'withdraw',
-        functionArgs: [uintCV(parseInt(withdrawSplitId))],
-        onFinish: (data) => {
-          alert('Withdrawal successful! Transaction ID: ' + data.txId)
-          setIsWithdrawLoading(false)
-        },
-        onCancel: () => setIsWithdrawLoading(false)
+        functionArgs: functionArgs.map(arg => cvToHex(arg)),
       })
+
+      alert('Withdrawal successful! Transaction ID: ' + response.txid)
     } catch (error) {
       console.error(error)
       alert('Error withdrawing funds')
+    } finally {
       setIsWithdrawLoading(false)
     }
   }
@@ -127,7 +121,7 @@ export function PaymentInteraction() {
           <Button 
             className="w-full" 
             onClick={handlePay}
-            disabled={isPayLoading || !splitId || !amount || !isConnected}
+            disabled={isPayLoading || !splitId || !amount || !isWalletConnected}
           >
             {isPayLoading ? (
               <>
@@ -175,7 +169,7 @@ export function PaymentInteraction() {
             variant="secondary"
             className="w-full" 
             onClick={handleWithdraw}
-            disabled={isWithdrawLoading || !withdrawSplitId || !isConnected}
+            disabled={isWithdrawLoading || !withdrawSplitId || !isWalletConnected}
           >
             {isWithdrawLoading ? (
               <>

@@ -1,27 +1,15 @@
-import { showConnect } from '@stacks/connect'
 import { LogOut, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useStacks, appDetails, userSession } from '@/lib/stacks.tsx'
+import { useStacks } from '@/lib/stacks.tsx'
 
 export function WalletConnect() {
-  const { isConnected, stxAddress } = useStacks()
+  const { isWalletConnected, stxAddress, connectWallet, disconnectWallet } = useStacks()
 
-  const connectWallet = () => {
-    showConnect({
-      appDetails,
-      onFinish: () => {
-        window.location.reload()
-      },
-      userSession,
-    })
+  const handleConnect = async () => {
+    await connectWallet()
   }
 
-  const disconnectWallet = () => {
-    userSession.signUserOut()
-    window.location.reload()
-  }
-
-  if (isConnected && stxAddress) {
+  if (isWalletConnected && stxAddress) {
     return (
       <div className="flex items-center gap-3">
         <div className="hidden sm:flex flex-col items-end">
@@ -39,7 +27,7 @@ export function WalletConnect() {
   }
 
   return (
-    <Button onClick={connectWallet}>
+    <Button onClick={handleConnect}>
       <Wallet className="h-4 w-4" />
       <span>Connect Wallet</span>
     </Button>

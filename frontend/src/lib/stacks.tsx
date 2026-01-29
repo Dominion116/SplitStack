@@ -1,9 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { UserSession, AppConfig } from '@stacks/connect'
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
+import { connect, disconnect, isConnected, getLocalStorage, request } from '@stacks/connect'
 import { STACKS_TESTNET } from '@stacks/network'
-
-const appConfig = new AppConfig(['store_write', 'publish_data'])
-const userSession = new UserSession({ appConfig })
 
 export const network = STACKS_TESTNET
 export const contractAddress = 'ST1P5VMVNKV33KQ7HXA43WVFQHTM9JBFBWXC0WNX8'
@@ -11,40 +8,72 @@ export const contractName = 'split-payment'
 
 export const appDetails = {
   name: 'SplitStack',
-  icon: window.location.origin + '/logo.svg',
+  icon: window.location.origin + '/vite.svg',
 }
 
 interface StacksContextType {
-  userSession: UserSession
-  userData: any | null
-  isConnected: boolean
+  isWalletConnected: boolean
   stxAddress: string | null
+  connectWallet: () => Promise<void>
+  disconnectWallet: () => void
 }
 
 const StacksContext = createContext<StacksContextType | null>(null)
 
 export function StacksProvider({ children }: { children: ReactNode }) {
-  const [userData, setUserData] = useState<any>(null)
+  const [isWalletConnected, setIsWalletConnected] = useState(false)
+  const [stxAddress, setStxAddress] = useState<string | null>(null)
 
+  // Check connection status on mount
   useEffect(() => {
-    if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((data) => {
-        setUserData(data)
-      })
-    } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData())
+    const checkConnection = () => {
+      const connected = isConnected()
+      setIsWalletConnected(connected)
+      
+      if (connected) {
+        const storage = getLocalStorage()
+        const addresses = storage?.addresses
+        if (addresses && addresses.length > 0) {
+          // Find testnet address first, then mainnet
+          const testnetAddr = addresses.find((a: any) => a.address?.startsWith('ST'))?.address
+          const mainnetAddr = addresses.find((a: any) => a.address?.startsWith('SP'))?.address
+          setStxAddress(testnetAddr || mainnetAddr || null)
+        }
+      }
+    }
+    
+    checkConnection()
+  }, [])
+
+  const connectWallet = useCallback(async () => {
+    try {
+      const response = await connect()
+      console.log('Wallet connected:', response)
+      
+      if (response && response.addresses) {
+        const testnetAddr = response.addresses.find((a: any) => a.address?.startsWith('ST'))?.address
+        const mainnetAddr = response.addresses.find((a: any) => a.address?.startsWith('SP'))?.address
+        setStxAddress(testnetAddr || mainnetAddr || null)
+        setIsWalletConnected(true)
+      }
+    } catch (error) {
+      console.error('Failed to connect wallet:', error)
     }
   }, [])
 
-  const stxAddress = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet || null
+  const disconnectWallet = useCallback(() => {
+    disconnect()
+    setIsWalletConnected(false)
+    setStxAddress(null)
+  }, [])
 
   return (
     <StacksContext.Provider
       value={{
-        userSession,
-        userData,
-        isConnected: !!userData,
+        isWalletConnected,
         stxAddress,
+        connectWallet,
+        disconnectWallet,
       }}
     >
       {children}
@@ -60,4 +89,5 @@ export function useStacks() {
   return context
 }
 
-export { userSession }
+// Re-export request for contract calls
+export { request }
