@@ -35,7 +35,7 @@ function App() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            Live on Stacks Testnet
+            Live on Stacks Mainnet
           </div>
           
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight px-4">
@@ -50,7 +50,7 @@ function App() {
           <div className="flex flex-wrap items-center justify-center gap-3 px-4">
             <Button variant="outline" size="sm" asChild>
               <a 
-                href="https://explorer.hiro.so/txid/0x5b77864e589143fbdc3415af2e89fd6e4d95fa3660af52017e203637b1147c58?chain=testnet"
+                href="https://explorer.hiro.so/address/SP30VGN68PSGVWGNMD0HH2WQMM5T486EK3YGP7Z3Y.split-stack-v2?chain=mainnet"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="gap-2"
@@ -157,7 +157,7 @@ function App() {
                 GitHub
               </a>
               <a 
-                href="https://explorer.hiro.so/txid/0x5b77864e589143fbdc3415af2e89fd6e4d95fa3660af52017e203637b1147c58?chain=testnet"
+                href="https://explorer.hiro.so/address/SP30VGN68PSGVWGNMD0HH2WQMM5T486EK3YGP7Z3Y.split-stack-v2?chain=mainnet"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground transition-colors"

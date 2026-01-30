@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { connect, disconnect, isConnected, getLocalStorage } from '@stacks/connect'
-import { STACKS_TESTNET } from '@stacks/network'
+import { STACKS_MAINNET } from '@stacks/network'
 
-export const network = STACKS_TESTNET
-export const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY'
+export const network = STACKS_MAINNET
+export const contractAddress = 'SP30VGN68PSGVWGNMD0HH2WQMM5T486EK3YGP7Z3Y'
 export const contractName = 'split-stack-v2'
 
 export const appDetails = {
