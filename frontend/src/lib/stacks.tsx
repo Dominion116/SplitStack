@@ -33,11 +33,14 @@ export function StacksProvider({ children }: { children: ReactNode }) {
       if (connected) {
         const storage = getLocalStorage()
         const addresses = storage?.addresses
-        if (addresses && addresses.length > 0) {
-          // Find testnet address first, then mainnet
-          const testnetAddr = addresses.find((a: any) => a.address?.startsWith('ST'))?.address
-          const mainnetAddr = addresses.find((a: any) => a.address?.startsWith('SP'))?.address
-          setStxAddress(testnetAddr || mainnetAddr || null)
+        if (addresses) {
+          // Access STX addresses from the storage object
+          const stxAddresses = (addresses as any)?.stx || []
+          if (stxAddresses.length > 0) {
+            // Get the first STX address
+            const address = stxAddresses[0]?.address
+            setStxAddress(address || null)
+          }
         }
       }
     }
@@ -51,10 +54,14 @@ export function StacksProvider({ children }: { children: ReactNode }) {
       console.log('Wallet connected:', response)
       
       if (response && response.addresses) {
-        const testnetAddr = response.addresses.find((a: any) => a.address?.startsWith('ST'))?.address
-        const mainnetAddr = response.addresses.find((a: any) => a.address?.startsWith('SP'))?.address
-        setStxAddress(testnetAddr || mainnetAddr || null)
-        setIsWalletConnected(true)
+        // Access STX addresses from the response object
+        const stxAddresses = (response.addresses as any)?.stx || []
+        if (stxAddresses.length > 0) {
+          // Get the first STX address
+          const address = stxAddresses[0]?.address
+          setStxAddress(address || null)
+          setIsWalletConnected(true)
+        }
       }
     } catch (error) {
       console.error('Failed to connect wallet:', error)
