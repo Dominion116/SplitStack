@@ -50,19 +50,28 @@ export function StacksProvider({ children }: { children: ReactNode }) {
 
   const connectWallet = useCallback(async () => {
     try {
-      const response = await connect()
-      console.log('Wallet connected:', response)
-      
-      if (response && response.addresses) {
-        // Access STX addresses from the response object
-        const stxAddresses = (response.addresses as any)?.stx || []
-        if (stxAddresses.length > 0) {
-          // Get the first STX address
-          const address = stxAddresses[0]?.address
-          setStxAddress(address || null)
+      const response = await connect({
+        appDetails: {
+          name: 'SplitStack',
+          icon: window.location.origin + '/vite.svg',
+        },
+        onFinish: (data) => {
+          console.log('Wallet connected:', data)
           setIsWalletConnected(true)
-        }
-      }
+          
+          // Get address from userSession
+          const userData = data.userSession.loadUserData()
+          const profile = userData.profile
+          const stxAddress = profile?.stxAddress?.testnet || profile?.stxAddress?.mainnet
+          
+          if (stxAddress) {
+            setStxAddress(stxAddress)
+          }
+        },
+        onCancel: () => {
+          console.log('Wallet connection cancelled')
+        },
+      })
     } catch (error) {
       console.error('Failed to connect wallet:', error)
     }
