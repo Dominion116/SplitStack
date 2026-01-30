@@ -1,24 +1,19 @@
 import { WalletConnect } from '@/components/WalletConnect'
-import { CreateSplit } from '@/components/CreateSplit'
-import { PaymentInteraction } from '@/components/PaymentInteraction'
-import { Layers, Github, ExternalLink } from 'lucide-react'
+import { CreateBillSplit } from '@/components/CreateBillSplit'
+import { PayBill } from '@/components/PayBill'
+import { ManageSplits } from '@/components/ManageSplits'
+import { Layers, Github, ExternalLink, Receipt, CreditCard, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 function App() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Background gradient effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-      </div>
-
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary">
+              <div className="p-2 rounded-lg bg-primary">
                 <Layers className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold">
@@ -31,9 +26,9 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Hero Section */}
-        <div className="text-center mb-16 space-y-6">
+        <div className="text-center mb-12 md:mb-16 space-y-4 md:space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -42,32 +37,33 @@ function App() {
             Live on Stacks Testnet
           </div>
           
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-            Transparent{' '}
-            <span className="gradient-text">Profit Sharing</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight px-4">
+            Split Bills with{' '}
+            <span className="text-primary">Clarity</span>
           </h1>
           
-          <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-            Distribute funds automatically across teams, creators, or projects. 
-            Secure, verifiable, and built on Bitcoin via Stacks.
+          <p className="max-w-2xl mx-auto text-base md:text-lg text-muted-foreground px-4">
+            Create bill splits with fixed amounts per payer. Secure, transparent, and built on Bitcoin via Stacks.
           </p>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 px-4">
             <Button variant="outline" size="sm" asChild>
               <a 
                 href="https://explorer.hiro.so/txid/0x5b77864e589143fbdc3415af2e89fd6e4d95fa3660af52017e203637b1147c58?chain=testnet"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="gap-2"
               >
                 <ExternalLink className="h-4 w-4" />
                 View Contract
               </a>
             </Button>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild>
               <a 
                 href="https://github.com/Dominion116/SplitStack"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="gap-2"
               >
                 <Github className="h-4 w-4" />
                 GitHub
@@ -77,27 +73,58 @@ function App() {
         </div>
 
         {/* Create Split Section */}
-        <section className="mb-16">
+        <section className="mb-12 md:mb-16">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Receipt className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-2xl md:text-3xl font-bold">Create a Split</h2>
+            </div>
+            <p className="text-sm md:text-base text-muted-foreground px-4">
+              Set up a new bill split with fixed amounts for each payer
+            </p>
+          </div>
           <div className="max-w-2xl mx-auto">
-            <CreateSplit />
+            <CreateBillSplit />
           </div>
         </section>
 
-        {/* Payment Interaction Section */}
-        <section>
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">Manage Payments</h2>
-            <p className="text-muted-foreground">Send payments to splits or withdraw your accumulated share</p>
-          </div>
-          <div className="max-w-4xl mx-auto">
-            <PaymentInteraction />
+        {/* Actions Grid */}
+        <section className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {/* Pay Bill */}
+            <div className="space-y-4">
+              <div className="text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl md:text-2xl font-bold">Pay Your Share</h2>
+                </div>
+                <p className="text-sm text-muted-foreground px-4 md:px-0">
+                  Pay your assigned amount for a split
+                </p>
+              </div>
+              <PayBill />
+            </div>
+
+            {/* Manage Splits */}
+            <div className="space-y-4">
+              <div className="text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                  <Settings className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl md:text-2xl font-bold">Manage</h2>
+                </div>
+                <p className="text-sm text-muted-foreground px-4 md:px-0">
+                  Withdraw or cancel your splits
+                </p>
+              </div>
+              <ManageSplits />
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <footer className="border-t mt-16 md:mt-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Layers className="h-4 w-4" />
