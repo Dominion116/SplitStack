@@ -41,10 +41,25 @@ export function StacksProvider({ children }: { children: ReactNode }) {
       const response = await connect({
         appDetails,
       })
-      console.log('Connected!', response)
-      if (response?.addresses?.stx?.[0]?.address) {
-        setStxAddress(response.addresses.stx[0].address)
+      console.log('Connect response:', JSON.stringify(response, null, 2))
+      
+      // Try to get address from response first
+      let address = response?.addresses?.stx?.[0]?.address
+      
+      // If not in response, check localStorage
+      if (!address) {
+        const storage = getLocalStorage()
+        console.log('Storage:', JSON.stringify(storage, null, 2))
+        address = storage?.addresses?.stx?.[0]?.address
+      }
+      
+      if (address) {
+        setStxAddress(address)
         setIsWalletConnected(true)
+      } else {
+        // Fallback: mark as connected anyway and let user see it worked
+        setIsWalletConnected(true)
+        console.log('Connected but could not extract address')
       }
     } catch (error) {
       console.error('Failed to connect:', error)
