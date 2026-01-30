@@ -35,12 +35,3 @@
   }
 }
 
-@layer components {
-  .glass {
-    @apply bg-card/70 backdrop-blur-xl border border-white/10 rounded-2xl;
-  }
-  
-  .gradient-text {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
-  }
-}
