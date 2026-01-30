@@ -1,14 +1,10 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import { showConnect } from '@stacks/connect'
+import { connect, disconnect, isConnected, getLocalStorage } from '@stacks/connect'
 import { STACKS_TESTNET } from '@stacks/network'
-import { UserSession, AppConfig } from '@stacks/auth'
 
 export const network = STACKS_TESTNET
 export const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY'
 export const contractName = 'split-stack-v2'
-
-const appConfig = new AppConfig(['store_write'])
-const userSession = new UserSession({ appConfig })
 
 export const appDetails = {
   name: 'SplitStack',
@@ -30,36 +26,33 @@ export function StacksProvider({ children }: { children: ReactNode }) {
 
   // Check connection status on mount
   useEffect(() => {
-    if (userSession.isUserSignedIn()) {
-      const userData = userSession.loadUserData()
-      const address = userData.profile?.stxAddress?.testnet
-      if (address) {
-        setStxAddress(address)
-        setIsWalletConnected(true)
+    const connected = isConnected()
+    if (connected) {
+      setIsWalletConnected(true)
+      const storage = getLocalStorage()
+      if (storage?.addresses?.stx?.[0]?.address) {
+        setStxAddress(storage.addresses.stx[0].address)
       }
     }
   }, [])
 
-  const connectWallet = useCallback(() => {
-    showConnect({
-      appDetails,
-      userSession: userSession as any,
-      onFinish: () => {
-        const userData = userSession.loadUserData()
-        const address = userData.profile?.stxAddress?.testnet
-        if (address) {
-          setStxAddress(address)
-          setIsWalletConnected(true)
-        }
-      },
-      onCancel: () => {
-        console.log('Connection cancelled')
-      },
-    })
+  const connectWallet = useCallback(async () => {
+    try {
+      const response = await connect({
+        appDetails,
+      })
+      console.log('Connected!', response)
+      if (response?.addresses?.stx?.[0]?.address) {
+        setStxAddress(response.addresses.stx[0].address)
+        setIsWalletConnected(true)
+      }
+    } catch (error) {
+      console.error('Failed to connect:', error)
+    }
   }, [])
 
   const disconnectWallet = useCallback(() => {
-    userSession.signUserOut()
+    disconnect()
     setIsWalletConnected(false)
     setStxAddress(null)
   }, [])
