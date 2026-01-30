@@ -1,10 +1,14 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import { connect, disconnect, isConnected, getLocalStorage, request } from '@stacks/connect'
+import { showConnect } from '@stacks/connect'
+import { AppConfig, UserSession } from '@stacks/auth'
 import { STACKS_TESTNET } from '@stacks/network'
 
 export const network = STACKS_TESTNET
 export const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY'
 export const contractName = 'split-stack-v2'
+
+const appConfig = new AppConfig(['store_write', 'publish_data'])
+const userSession = new UserSession({ appConfig })
 
 export const appDetails = {
   name: 'SplitStack',
@@ -27,21 +31,11 @@ export function StacksProvider({ children }: { children: ReactNode }) {
   // Check connection status on mount
   useEffect(() => {
     const checkConnection = () => {
-      const connected = isConnected()
-      setIsWalletConnected(connected)
-      
-      if (connected) {
-        const storage = getLocalStorage()
-        const addresses = storage?.addresses
-        if (addresses) {
-          // Access STX addresses from the storage object
-          const stxAddresses = (addresses as any)?.stx || []
-          if (stxAddresses.length > 0) {
-            // Get the first STX address
-            const address = stxAddresses[0]?.address
-            setStxAddress(address || null)
-          }
-        }
+      if (userSession.isUserSignedIn()) {
+        setIsWalletConnected(true)
+        const userData = userSession.loadUserData()
+        const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet
+        setStxAddress(address)
       }
     }
     
@@ -50,27 +44,24 @@ export function StacksProvider({ children }: { children: ReactNode }) {
 
   const connectWallet = useCallback(async () => {
     try {
-      const response = await connect({
+      showConnect({
         appDetails: {
           name: 'SplitStack',
           icon: window.location.origin + '/vite.svg',
         },
-        onFinish: (data) => {
-          console.log('Wallet connected:', data)
-          setIsWalletConnected(true)
-          
-          // Get address from userSession
-          const userData = data.userSession.loadUserData()
-          const profile = userData.profile
-          const stxAddress = profile?.stxAddress?.testnet || profile?.stxAddress?.mainnet
-          
-          if (stxAddress) {
-            setStxAddress(stxAddress)
+        redirectTo: '/',
+        onFinish: () => {
+          if (userSession.isUserSignedIn()) {
+            const userData = userSession.loadUserData()
+            const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet
+            setStxAddress(address)
+            setIsWalletConnected(true)
           }
         },
         onCancel: () => {
           console.log('Wallet connection cancelled')
         },
+        userSession,
       })
     } catch (error) {
       console.error('Failed to connect wallet:', error)
@@ -78,7 +69,7 @@ export function StacksProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const disconnectWallet = useCallback(() => {
-    disconnect()
+    userSession.signUserOut()
     setIsWalletConnected(false)
     setStxAddress(null)
   }, [])
@@ -105,5 +96,5 @@ export function useStacks() {
   return context
 }
 
-// Re-export request for contract calls
-export { request }
+// Export userSession for contract calls
+export { userSession }
