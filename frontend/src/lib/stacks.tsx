@@ -89,6 +89,3 @@ export function useStacks() {
   }
   return context
 }
-
-// Export userSession for contract calls
-export { userSession }
