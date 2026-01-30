@@ -84,7 +84,7 @@
         amount-paid: u0,
         withdrawn: false,
         cancelled: false,
-        created-at: block-height
+        created-at: stacks-block-height
       }
     )
     
