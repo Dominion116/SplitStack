@@ -1,13 +1,10 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import { AppConfig, UserSession, showConnect } from '@stacks/connect'
+import { connect, disconnect, isSignedIn, getLocalStorage, AuthOptions } from '@stacks/connect'
 import { STACKS_TESTNET } from '@stacks/network'
 
 export const network = STACKS_TESTNET
 export const contractAddress = 'ST30VGN68PSGVWGNMD0HH2WQMM5T486EK3WBNTHCY'
 export const contractName = 'split-stack-v2'
-
-const appConfig = new AppConfig(['store_write', 'publish_data'])
-export const userSession = new UserSession({ appConfig })
 
 export const appDetails = {
   name: 'SplitStack',
@@ -27,45 +24,54 @@ export function StacksProvider({ children }: { children: ReactNode }) {
   const [isWalletConnected, setIsWalletConnected] = useState(false)
   const [stxAddress, setStxAddress] = useState<string | null>(null)
 
-  // Check connection status on mount and after auth
+  // Check connection status on mount
   useEffect(() => {
     const checkConnection = () => {
-      if (userSession.isUserSignedIn()) {
-        setIsWalletConnected(true)
-        const userData = userSession.loadUserData()
-        const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet
-        setStxAddress(address)
-      } else if (userSession.isSignInPending()) {
-        userSession.handlePendingSignIn().then(() => {
-          if (userSession.isUserSignedIn()) {
-            const userData = userSession.loadUserData()
-            const address = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet
-            setStxAddress(address)
-            setIsWalletConnected(true)
+      const signedIn = isSignedIn()
+      setIsWalletConnected(signedIn)
+      
+      if (signedIn) {
+        const storage = getLocalStorage()
+        if (storage?.addresses) {
+          // Get testnet address
+          const addresses = storage.addresses as any
+          const stxAddr = addresses?.stx?.[0]?.address
+          if (stxAddr) {
+            setStxAddress(stxAddr)
           }
-        })
+        }
       }
     }
     
     checkConnection()
   }, [])
 
-  const connectWallet = useCallback(() => {
-    showConnect({
-      appDetails,
-      redirectTo: '/',
-      onFinish: () => {
-        window.location.reload()
-      },
-      userSession,
-    })
+  const connectWallet = useCallback(async () => {
+    try {
+      const authOptions: AuthOptions = {
+        appDetails,
+        onFinish: ({ addresses }) => {
+          console.log('Connected!', addresses)
+          const stxAddr = (addresses as any)?.stx?.[0]?.address
+          if (stxAddr) {
+            setStxAddress(stxAddr)
+            setIsWalletConnected(true)
+          }
+        },
+        onCancel: () => {
+          console.log('Connection cancelled')
+        },
+      }
+      await connect(authOptions)
+    } catch (error) {
+      console.error('Failed to connect wallet:', error)
+    }
   }, [])
 
   const disconnectWallet = useCallback(() => {
-    userSession.signUserOut()
+    disconnect()
     setIsWalletConnected(false)
     setStxAddress(null)
-    window.location.reload()
   }, [])
 
   return (
