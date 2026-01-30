@@ -61,7 +61,6 @@ export function StacksProvider({ children }: { children: ReactNode }) {
         onCancel: () => {
           console.log('Wallet connection cancelled')
         },
-        userSession,
       })
     } catch (error) {
       console.error('Failed to connect wallet:', error)
