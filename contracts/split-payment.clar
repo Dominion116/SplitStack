@@ -27,8 +27,7 @@
     total-amount: uint,
     amount-paid: uint,
     withdrawn: bool,
-    cancelled: bool,
-    created-at: uint
+    cancelled: bool
   }
 )
 
@@ -83,8 +82,7 @@
         total-amount: total-amount,
         amount-paid: u0,
         withdrawn: false,
-        cancelled: false,
-        created-at: stacks-block-height
+        cancelled: false
       }
     )
     
