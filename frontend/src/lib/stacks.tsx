@@ -43,7 +43,7 @@ export function StacksProvider({ children }: { children: ReactNode }) {
   const connectWallet = useCallback(() => {
     showConnect({
       appDetails,
-      userSession,
+      userSession: userSession as any,
       onFinish: () => {
         const userData = userSession.loadUserData()
         const address = userData.profile?.stxAddress?.testnet
