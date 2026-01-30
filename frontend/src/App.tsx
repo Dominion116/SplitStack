@@ -2,7 +2,8 @@ import { WalletConnect } from '@/components/WalletConnect'
 import { CreateBillSplit } from '@/components/CreateBillSplit'
 import { PayBill } from '@/components/PayBill'
 import { ManageSplits } from '@/components/ManageSplits'
-import { Layers, Github, ExternalLink, Receipt, CreditCard, Settings } from 'lucide-react'
+import { ActiveSplits } from '@/components/ActiveSplits'
+import { Layers, Github, ExternalLink, Receipt, CreditCard, Settings, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 function App() {
@@ -85,6 +86,22 @@ function App() {
           </div>
           <div className="max-w-2xl mx-auto">
             <CreateBillSplit />
+          </div>
+        </section>
+
+        {/* Look Up Split Section */}
+        <section className="mb-12 md:mb-16">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Search className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-2xl md:text-3xl font-bold">Find a Split</h2>
+            </div>
+            <p className="text-sm md:text-base text-muted-foreground px-4">
+              Look up a split by ID to see details and check if you need to pay
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <ActiveSplits />
           </div>
         </section>
 
